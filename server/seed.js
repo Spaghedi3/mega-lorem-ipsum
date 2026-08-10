@@ -3,17 +3,17 @@ import db from './db.js';
 
 faker.seed(42);
 
-const categories = ['Electronics', 'Clothing', 'Books', 'Home', 'Toys'];
+const CATEGORIES = ['Electronics', 'Clothing', 'Books', 'Home', 'Toys'];
 
-const statuses = ['available', 'out of stock', 'discontinued'];
+const STATUSES = ['available', 'out of stock', 'discontinued'];
 
 const makeItem = () => {
     return {
         name: faker.commerce.productName(),
-        category: faker.helpers.arrayElement(categories),
+        category: faker.helpers.arrayElement(CATEGORIES),
         price: parseFloat(faker.commerce.price()),
         stock: faker.number.int({ min: 0, max: 100 }),
-        status: faker.helpers.arrayElement(statuses),
+        status: faker.helpers.arrayElement(STATUSES),
         updated_at: faker.date.recent().toISOString(),
     };
 }
