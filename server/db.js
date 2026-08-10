@@ -1,7 +1,9 @@
 import { fileURLToPath } from 'node:url';
 import Database from 'better-sqlite3';
 
-const dbPath = fileURLToPath(new URL('../data.db', import.meta.url));
+const dbPath = process.env.DB_PATH 
+    ? process.env.DB_PATH
+    : fileURLToPath(new URL('../data.db', import.meta.url));
 
 const db = new Database(dbPath);
 
