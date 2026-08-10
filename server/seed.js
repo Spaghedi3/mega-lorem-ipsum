@@ -1,11 +1,8 @@
 import { faker } from '@faker-js/faker';
 import db from './db.js';
+import { CATEGORIES, STATUSES } from '../public/js/constants.js';
 
 faker.seed(42);
-
-const CATEGORIES = ['Electronics', 'Clothing', 'Books', 'Home', 'Toys'];
-
-const STATUSES = ['available', 'out of stock', 'discontinued'];
 
 const makeItem = () => {
     return {
@@ -14,7 +11,7 @@ const makeItem = () => {
         price: parseFloat(faker.commerce.price()),
         stock: faker.number.int({ min: 0, max: 100 }),
         status: faker.helpers.arrayElement(STATUSES),
-        updated_at: faker.date.recent().toISOString(),
+        updated_at: faker.date.recent({ days: 180 }).toISOString(),
     };
 }
 
