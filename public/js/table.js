@@ -1,4 +1,5 @@
 import { listItems } from './api.js';
+import { openCreate, openEdit, openDelete, setOnSaved, setOnDeleted } from './modal.js';
 
 const state = {
   page: 1,
@@ -7,6 +8,8 @@ const state = {
   order: 'asc',
   q: ''
 };
+
+let currentItems = [];
 
 const tbody = document.querySelector('#items-body');
 const statusEl = document.querySelector('#status');
@@ -49,6 +52,25 @@ function renderRows(items) {
       tr.append(td);
     }
 
+    const actions = document.createElement('td');
+    actions.className = 'actions';
+
+    const editBtn = document.createElement('button');
+    editBtn.type = 'button';
+    editBtn.dataset.action = 'edit';
+    editBtn.textContent = 'Edit';
+    editBtn.setAttribute('aria-label', `Edit ${item.name}`);
+
+    const delBtn = document.createElement('button');
+    delBtn.type = 'button';
+    delBtn.dataset.action = 'delete';
+    delBtn.className = 'link-danger';
+    delBtn.textContent = 'Delete';
+    delBtn.setAttribute('aria-label', `Delete ${item.name}`);
+
+    actions.append(editBtn, delBtn);
+    tr.append(actions);
+
     tbody.append(tr);
   }
 }
@@ -63,6 +85,7 @@ async function load() {
   setStatus('Loading...');
   try {
     const { data, meta } = await listItems(state);
+    currentItems = data;
     renderRows(data);
     renderPagination(meta);
     setStatus(`${meta.total} item${meta.total === 1 ? '' : 's'}`);
@@ -126,6 +149,28 @@ prevBtn.addEventListener('click', () => {
 
 nextBtn.addEventListener('click', () => {
   state.page++;
+  load();
+});
+
+tbody.addEventListener('click', (e) => {
+  const btn = e.target.closest('button[data-action]');
+  if (!btn) return;
+
+  const id = Number(btn.closest('tr').dataset.id);
+  const item = currentItems.find((i) => i.id === id);
+  if (!item) return;
+
+  if (btn.dataset.action === 'edit') openEdit(item, btn);
+  if (btn.dataset.action === 'delete') openDelete(item, btn);
+});
+
+document.querySelector('#add-btn').addEventListener('click', (e) => {
+  openCreate(e.currentTarget);
+});
+
+setOnSaved(() => load());
+setOnDeleted(() => {
+  if (currentItems.length === 1 && state.page > 1) state.page--;
   load();
 });
 

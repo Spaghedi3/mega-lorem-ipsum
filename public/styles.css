@@ -136,3 +136,124 @@ td.num { text-align: right; font-variant-numeric: tabular-nums; }
   .controls { flex-direction: column; }
   input[type="search"] { width: 100%; min-width: 0; }
 }
+
+/* ---------- dialogs ---------- */
+
+dialog {
+  width: min(30rem, calc(100vw - 2rem));
+  padding: 1.25rem;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: 0 12px 32px rgb(0 0 0 / .18);
+  max-height: min(85vh, 40rem);
+  overflow-y: auto;
+
+  opacity: 0;
+  transform: translateY(8px) scale(.98);
+  transition:
+    opacity .18s ease,
+    transform .18s ease,
+    overlay .18s allow-discrete,
+    display .18s allow-discrete;
+}
+
+dialog[open] {
+  opacity: 1;
+  transform: none;
+}
+
+@starting-style {
+  dialog[open] {
+    opacity: 0;
+    transform: translateY(8px) scale(.98);
+  }
+}
+
+dialog::backdrop {
+  background: rgb(0 0 0 / 0);
+  transition:
+    background .18s ease,
+    overlay .18s allow-discrete,
+    display .18s allow-discrete;
+}
+
+dialog[open]::backdrop { background: rgb(0 0 0 / .45); }
+
+@starting-style {
+  dialog[open]::backdrop { background: rgb(0 0 0 / 0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  dialog, dialog::backdrop { transition-duration: .01ms; }
+}
+
+/* lock page scroll; scrollbar-gutter: stable keeps the layout from shifting */
+html:has(dialog[open]) { overflow: hidden; }
+
+.dialog-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+.dialog-head h2 { font-size: 1.1rem; margin: 0; }
+
+.icon-btn {
+  border: 0;
+  background: none;
+  font-size: 1.4rem;
+  line-height: 1;
+  padding: .2rem .45rem;
+  border-radius: 6px;
+  color: var(--muted);
+}
+.icon-btn:hover { background: var(--bg); color: var(--text); }
+
+.field { display: flex; flex-direction: column; gap: .3rem; margin-bottom: .9rem; }
+.field label { font-size: .85rem; font-weight: 600; color: var(--muted); }
+
+.field input, .field select {
+  font: inherit;
+  padding: .5rem .6rem;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--text);
+}
+
+.field-row { display: flex; gap: .75rem; }
+.field-row .field { flex: 1; }
+
+.error, .form-error, .hint {
+  margin: 0;
+  font-size: .8rem;
+  min-height: 1rem;
+}
+.error, .form-error { color: var(--danger); }
+.hint { color: var(--muted); }
+
+.field:has(.error:not(:empty)) input,
+.field:has(.error:not(:empty)) select { border-color: var(--danger); }
+
+.dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: .5rem;
+  margin-top: 1rem;
+}
+
+#save-btn { background: var(--accent); border-color: var(--accent); color: #fff; }
+.danger { background: var(--danger); border-color: var(--danger); color: #fff; }
+
+@media (max-width: 480px) {
+  .field-row { flex-direction: column; gap: 0; }
+  .dialog-actions { flex-direction: column-reverse; }
+  .dialog-actions button { width: 100%; }
+}
+
+td.actions { display: flex; gap: .4rem; }
+td.actions button { padding: .25rem .55rem; font-size: .85rem; }
+.link-danger { color: var(--danger); }

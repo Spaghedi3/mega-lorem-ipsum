@@ -45,7 +45,80 @@
       <button type="button" id="next-btn">Next</button>
     </nav>
   </main>
+  <dialog id="item-dialog" aria-labelledby="dialog-title">
+    <div class="dialog-head">
+      <h2 id="dialog-title">Add item</h2>
+      <button type="button" class="icon-btn" id="dialog-close" aria-label="Close dialog">&times;</button>
+    </div>
 
+    <form id="item-form" novalidate>
+      <div class="field">
+        <label for="f-name">Name</label>
+        <input type="text" id="f-name" name="name" autofocus aria-describedby="e-name">
+        <p class="error" id="e-name"></p>
+      </div>
+
+      <div class="field">
+        <label for="f-category">Category</label>
+        <select id="f-category" name="category" aria-describedby="e-category"></select>
+        <p class="error" id="e-category"></p>
+      </div>
+
+      <div class="field-row">
+        <div class="field">
+          <label for="f-price">Price</label>
+          <input type="text" inputmode="decimal" id="f-price" name="price" aria-describedby="e-price">
+          <p class="error" id="e-price"></p>
+        </div>
+
+        <div class="field">
+          <label for="f-stock">Stock</label>
+          <input type="text" inputmode="numeric" id="f-stock" name="stock" aria-describedby="e-stock">
+          <p class="error" id="e-stock"></p>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="f-status">Status</label>
+        <select id="f-status" name="status" aria-describedby="e-status"></select>
+        <p class="error" id="e-status"></p>
+      </div>
+
+      <p class="form-error" id="form-error" role="alert"></p>
+
+      <div class="dialog-actions">
+        <button type="button" id="cancel-btn">Cancel</button>
+        <button type="submit" id="save-btn">Save</button>
+      </div>
+    </form>
+  </dialog>
+  <dialog id="delete-dialog" role="alertdialog"
+          aria-labelledby="delete-title" aria-describedby="delete-desc">
+    <div class="dialog-head">
+      <h2 id="delete-title">Delete item</h2>
+      <button type="button" class="icon-btn" id="delete-close" aria-label="Close dialog">&times;</button>
+    </div>
+
+    <p id="delete-desc">
+      Are you sure you want to delete <strong id="delete-name"></strong> forever?
+      This cannot be undone.
+    </p>
+
+    <form id="delete-form" novalidate>
+      <div class="field">
+        <label for="f-confirm">Type <code>delete</code> to confirm</label>
+        <input type="text" id="f-confirm" autofocus autocomplete="off"
+               autocapitalize="off" spellcheck="false" aria-describedby="confirm-hint">
+        <p class="hint" id="confirm-hint">The button stays disabled until the word matches.</p>
+      </div>
+
+      <p class="form-error" id="delete-error" role="alert"></p>
+
+      <div class="dialog-actions">
+        <button type="submit" id="confirm-delete-btn" class="danger" disabled>Delete forever</button>
+      </div>
+    </form>
+  </dialog>
   <script type="module" src="js/table.js"></script>
 </body>
 </html>
