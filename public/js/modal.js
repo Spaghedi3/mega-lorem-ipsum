@@ -9,6 +9,7 @@ const categorySelect = document.querySelector('#f-category');
 const statusSelect = document.querySelector('#f-status');
 const saveBtn = document.querySelector('#save-btn');
 const formError = document.querySelector('#form-error');
+
 const deleteDialog = document.querySelector('#delete-dialog');
 const deleteForm = document.querySelector('#delete-form');
 const deleteNameEl = document.querySelector('#delete-name');
@@ -28,6 +29,9 @@ let deletingId = null;
 let deleteLastFocused = null;
 let onDeleted = () => {};
 
+let onClosed = () => {};
+let silentClose = false;
+
 function fillSelect(select, values) {
   select.replaceChildren();
   for (const value of values) {
@@ -44,7 +48,9 @@ fillSelect(statusSelect, STATUSES);
 export function openDialog({ title, trigger }) {
   lastFocused = trigger ?? document.activeElement;
   titleEl.textContent = title;
-  dialog.showModal();
+  if(!dialog.open) {
+    dialog.showModal();
+  }
 }
 
 export function closeDialog() {
@@ -99,7 +105,9 @@ export function openDelete(item, trigger) {
   deleteLastFocused = trigger ?? document.activeElement;
   deleteNameEl.textContent = item.name;
   resetDeleteForm();
-  deleteDialog.showModal();
+  if(!deleteDialog.open) {
+    deleteDialog.showModal();
+  }
 }
 
 function resetDeleteForm() {
@@ -119,6 +127,15 @@ function enableBackdropClose(dialogEl) {
   });
 }
 
+export function setOnClosed(fn) { onClosed = fn; }
+
+export function closeAll() {
+  if (!dialog.open && !deleteDialog.open) return;
+  silentClose = true;
+  dialog.close();
+  deleteDialog.close();
+}
+
 dialog.addEventListener('close', () => {
   form.reset();
   if (lastFocused?.isConnected) {
@@ -127,6 +144,10 @@ dialog.addEventListener('close', () => {
     document.querySelector('#add-btn').focus();
   }
   lastFocused = null;
+
+  const silent = silentClose;
+  silentClose = false;
+  if (!silent) onClosed();
 });
 
 document.querySelector('#dialog-close').addEventListener('click', closeDialog);
@@ -196,6 +217,10 @@ deleteDialog.addEventListener('close', () => {
   else document.querySelector('#add-btn').focus();
   deleteLastFocused = null;
   deletingId = null;
+  
+  const silent = silentClose;
+  silentClose = false;
+  if (!silent) onClosed();
 });
 
 document.querySelector('#delete-close').addEventListener('click', () => deleteDialog.close());

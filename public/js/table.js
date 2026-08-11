@@ -1,13 +1,13 @@
-import { listItems } from './api.js';
-import { openCreate, openEdit, openDelete, setOnSaved, setOnDeleted } from './modal.js';
+import { listItems, getItem } from './api.js';
+import { parseQuery, buildQuery } from './urlstate.js';
+import { openCreate, openEdit, openDelete, closeAll,
+         setOnSaved, setOnDeleted, setOnClosed } from './modal.js';
 
-const state = {
-  page: 1,
-  per_page: 25,
-  sort: 'id',
-  order: 'asc',
-  q: ''
-};
+const state = parseQuery(location.search);
+
+let pushedForModal = false;
+let skipBackOnClose = false;
+const LIST_KEYS = ['page', 'per_page', 'sort', 'order', 'q'];
 
 let currentItems = [];
 
@@ -81,6 +81,42 @@ function renderPagination(meta) {
   nextBtn.disabled = meta.page >= meta.total_pages;
 }
 
+function urlFor() {
+  return buildQuery(state) || location.pathname;
+}
+function pushUrl() { history.pushState(null, '', urlFor()); }
+function replaceUrl() { history.replaceState(null, '', urlFor()); }
+
+function openModal(kind, id, trigger, item) {
+  state.modal = kind;
+  state.id = id;
+  pushUrl();
+  pushedForModal = true;
+  if (kind === 'new') openCreate(trigger);
+  else if (kind === 'edit') openEdit(item, trigger);
+  else openDelete(item, trigger);
+}
+
+async function syncModal() {
+  if (!state.modal) return closeAll();
+  if (state.modal === 'new') return openCreate(null);
+
+  let item = currentItems.find((i) => i.id === state.id);
+  if (!item) {
+    try {
+      item = (await getItem(state.id)).data;
+    } catch {
+      setStatus('That item no longer exists.', 'error');
+      state.modal = null;
+      state.id = null;
+      replaceUrl();
+      return;
+    }
+  }
+  if (state.modal === 'edit') openEdit(item, null);
+  else openDelete(item, null);
+}
+
 async function load() {
   setStatus('Loading...');
   try {
@@ -112,6 +148,7 @@ thead.addEventListener('click', (e) => {
 
   state.page = 1;
   updateSortIndicators();
+  replaceUrl();
   load();
 });
 
@@ -136,6 +173,7 @@ searchInput.addEventListener('input', () => {
   searchTimer = setTimeout(() => {
     state.q = searchInput.value.trim();
     state.page = 1;
+    replaceUrl();
     load();
   }, 300);
 });
@@ -143,12 +181,14 @@ searchInput.addEventListener('input', () => {
 prevBtn.addEventListener('click', () => {
   if (state.page > 1) {
     state.page--;
+    replaceUrl();
     load();
   }
 });
 
 nextBtn.addEventListener('click', () => {
   state.page++;
+  replaceUrl();
   load();
 });
 
@@ -160,18 +200,48 @@ tbody.addEventListener('click', (e) => {
   const item = currentItems.find((i) => i.id === id);
   if (!item) return;
 
-  if (btn.dataset.action === 'edit') openEdit(item, btn);
-  if (btn.dataset.action === 'delete') openDelete(item, btn);
+  if (btn.dataset.action === 'edit') openModal('edit', item.id, btn, item);
+  if (btn.dataset.action === 'delete') openModal('delete', item.id, btn, item);
 });
 
 document.querySelector('#add-btn').addEventListener('click', (e) => {
-  openCreate(e.currentTarget);
+  openModal('new', null, e.currentTarget);
 });
 
-setOnSaved(() => load());
+window.addEventListener('popstate', async () => {
+  const next = parseQuery(location.search);
+  const listChanged = LIST_KEYS.some((k) => next[k] !== state[k]);
+  Object.assign(state, next);
+
+  searchInput.value = state.q;
+  updateSortIndicators();
+  if (listChanged) await load();
+
+  pushedForModal = Boolean(state.modal);
+  await syncModal();
+});
+
+setOnSaved(() => { skipBackOnClose = true; load(); });
+
 setOnDeleted(() => {
+  skipBackOnClose = true;
   if (currentItems.length === 1 && state.page > 1) state.page--;
   load();
 });
 
-load();
+setOnClosed(() => {
+  state.modal = null;
+  state.id = null;
+  const goBack = pushedForModal && !skipBackOnClose;
+  pushedForModal = false;
+  skipBackOnClose = false;
+  if (goBack) history.back();
+  else replaceUrl();
+});
+
+(async () => {
+  searchInput.value = state.q;
+  updateSortIndicators();
+  await load();
+  if (state.modal) await syncModal();
+})();
