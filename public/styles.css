@@ -189,7 +189,7 @@ dialog[open]::backdrop { background: rgb(0 0 0 / .45); }
   dialog, dialog::backdrop { transition-duration: .01ms; }
 }
 
-/* lock page scroll; scrollbar-gutter: stable keeps the layout from shifting */
+/* lock page scroll */
 html:has(dialog[open]) { overflow: hidden; }
 
 .dialog-head {
