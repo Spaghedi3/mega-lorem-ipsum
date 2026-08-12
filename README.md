@@ -4,11 +4,12 @@ A data table with full CRUD, sorting, live filtering, pagination and shareable U
 
 ## Running it
 
-Requires Node 20 or newer.
+**Requires Node 22 or newer** (check with `node -v`). Node 20 is end of life
+and the SQLite driver no longer ships prebuilt binaries for it, which forces
+a source build requiring Python and C++ build tools.
 
 ```bash
 npm install
-npm approve-scripts better-sqlite3   # only if npm blocks the native build
 npm run seed                          # creates data.db with 200 records
 npm start                             # http://localhost:3000
 ```
